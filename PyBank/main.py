@@ -53,7 +53,7 @@ def print_and_write(filename, string):
     filename.write(string + "\n")
     print(string)
 
-output_path = csvpath = os.path.join(cwd, 'analysis', 'Financial_Analysis.txt' )
+output_path = os.path.join(cwd, 'analysis', 'Financial_Analysis.txt' )
 
 #write to a file and print results using the function you created
 with open(output_path, 'w') as file:
