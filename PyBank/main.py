@@ -1,8 +1,7 @@
 
 import os
 import csv
-import pandas as pd
-import numpy as np
+
 
 
 #get working directory path
@@ -12,40 +11,51 @@ cwd = os.getcwd()
 csvpath = os.path.join(cwd, 'Resources', 'budget_data.csv')
 
 
-#read csv into a pandas dataframe
-budget_df = pd.read_csv(csvpath)
+#Open the csv file
 
-#sum up net profit/loss from "Profit/Losses" column of the dataframe
-net_pl = budget_df['Profit/Losses'].sum()
+with open(csvpath, encoding='utf-8') as csvfile:
+           
+    csvreader = csv.reader(csvfile, delimiter=',')
+    
+    #Store the first row of the csv and then advance to the next row
+    column_headers = next(csvreader)
+    
+    #Create empty lists for both dates column, profit/loss column, and changes in profit/loss
+    dates_list =[]
+    profit_loss_list = []
+    changes = []
+    
+    #read the elements from the csv into their respective lists
+    for row in csvreader:
+        dates_list.append(row[0])
+        profit_loss_list.append(int(row[1]))
 
-# (1) create a new column in the dataframe that calculates the changes over each period by using the 'shift' method
-# first row of this new column will be #N/A since we cant compare the first value since its the initial value
-budget_df['changes'] = budget_df['Profit/Losses'] - budget_df['Profit/Losses'].shift() 
-budget_df = budget_df.fillna("#N/A")
+    #get total months by getting length of the dates_list
+    total_months = len(dates_list)
 
-#find total months by getting length of the Date column
-total_months = len(budget_df['Date'])
+    #get net_pl (net total amount of "Profit/Losses") by getting sum of profit_loss_list
+    net_pl = sum(profit_loss_list)
+    
+    #create changes list by subtracting next month profit/loss from previous except on the initial month so start at index=1
+    for element in range(1, total_months):
+        
+        changes.append(profit_loss_list[element] - profit_loss_list[element - 1])
+    
+    # (1) calculate and round the average change to two decimal points
+    avg_change = round((sum(changes) / len(changes)),2)
+    
+    #calculate greatest increase in profits by taking the max of the changes list
+    greatest_increase = max(changes)
+    #pull the date of the greatest increase by pulling index of the max value in changes and add 1 to that index 
+    #add 1 to the index because 'changes' skipped the initial month so list is 1 element shorter
+    greatest_increase_date = dates_list[changes.index(max(changes)) + 1]
 
-#calculate the average change by calling the mean method in pandas
-#using iloc to exclude the first row of the 'changes' column since this is the initial value and is #N/A
-avg_change = budget_df['changes'].iloc[1:].mean()
+    #calculate greatest decrease in profits by taking the min of the changes list
+    greatest_decrease = min(changes)
+    #pull the date of the greatest decrease by pulling index of the min value in changes and add 1 to that index 
+    #add 1 to the index because 'changes' skipped the initial month so list is 1 element shorter
+    greatest_decrease_date = dates_list[changes.index(min(changes)) + 1]
 
-# (2) round the avearge change to two decimal points
-avg_change = round(avg_change, 2)
-
-# finding greatest increase calling 'max' on the changes column excluding the first row 
-greatest_increase = budget_df['changes'].iloc[1:].max()
-
-# (3) finding the date of greatest increase by calling 'idxmax' method on the 'changes' column to grab the row index then using iloc to locate the date in column 'Date'
-# need to use 'astype(float)' since 'idxmax' wont work on a series object 
-greatest_increase_date = budget_df['Date'].iloc[budget_df['changes'].iloc[1:].astype(float).idxmax()]
-
-# finding greatest decrease calling 'min' on the changes column excluding the first row 
-greatest_decrease = budget_df['changes'].iloc[1:].min()
-
-# (3) If there is an 'idxmax' we can assume an 'idxmin' method also exists call that in the same way to find index of greatest decrease
-# need to use 'astype(float)' since 'idxmin' wont work on a series object 
-greatest_decrease_date = budget_df['Date'].iloc[budget_df['changes'].iloc[1:].astype(float).idxmin()]
 
 
 #create a function that will both print and write to a file this way we dont have to repeat both the print and write statements
