@@ -12,7 +12,6 @@ csvpath = os.path.join(cwd, 'Resources', 'budget_data.csv')
 
 
 #Open the csv file
-
 with open(csvpath, encoding='utf-8') as csvfile:
            
     csvreader = csv.reader(csvfile, delimiter=',')
@@ -20,7 +19,7 @@ with open(csvpath, encoding='utf-8') as csvfile:
     #Store the first row of the csv and then advance to the next row
     column_headers = next(csvreader)
     
-    #Create empty lists for both dates column, profit/loss column, and changes in profit/loss
+    #Create empty lists for dates column, profit/loss column, and changes in profit/loss
     dates_list =[]
     profit_loss_list = []
     changes = []
